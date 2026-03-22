@@ -481,7 +481,7 @@ h1:hover { color: #ffc050; }
   </div>
 </div>
 
-<div class="toolbar">
+<div class="toolbar"><button class="btn" onclick="downloadHTML()">Download for offline use</button>
   <button class="btn" onclick="exportJSON()">Export JSON</button>
   <button class="btn" onclick="importJSON()">Import JSON</button>
   <button class="btn danger" onclick="resetProgress()">Reset Progress</button>
@@ -901,6 +901,14 @@ function previewIcon(url) {
 }
 
 // ── Export / Import ───────────────────────────────────────────────────────────
+function downloadHTML() {
+  const html = document.documentElement.outerHTML;
+  const blob = new Blob([html], { type: 'text/html' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'osrs-progression-chart.html';
+  a.click();
+}
 function exportJSON() {
   const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
