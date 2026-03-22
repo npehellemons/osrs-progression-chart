@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type='text/javascript' src='https://cdn.discordapp.com/ogASwcg_qvAFQfFfrQIpNyaxJWZuNyz5xyBb8mVsDHFFuBcMMniEmrsmfrA1lAdVwkIvzZ9FZR2EPEi7eEHcPT60QPGM9xD5CKH3yaIaBjnuUtgi5OchhntXMO6NOe6dTdugs-tTUDnYQaRoRrZA0P09MKUQcEBY_htQLO6mC68BXxdMXka8fYF46RK4pSt10rdeR2Q3qYaNZG4EpxNiA5nc1r16N32FVCiFIr6zeNDjtZoBiY1M3XLAUKdsnEOT-6DiIvcnSJuejh2JagCq5TUJA6FyLzF_WZbeLEXSQl0Oc6WI5u3WSMZFsaQb33CwDvOnM4QmoBQNU_hBeOhZva3BGMuDZQpN2g0_3eIC9w1ieETC8VR_F81EA5PKpJ1QTxPtOANLRsIiKalOwaJCTG3vPW61I1WaRst0337yD4ZK_duusFJph9jj8V3h2yfQVVUpCmsSTAFtRCtP-fICBJ8l7yaw2zHx6vl7JK0s8gHpNhGTfU2QF1_Tqhd7dBeVMO9DnZ2VdbwAM2pjZPFgN4iQy-x8UkGvF0n1G6kP9sveBPGRloG6XMDPezSgpgZcHjecEBYd7pg7G4aq_ckj4ZQeV6ENQ6xuOGtbsnULjxTdv714IC1i96ylcwgU6jxq15l7ynitX3aMb5WSRgsa3CmhFWgANz2DPxU_cBVaQgqSEmP8FqZJ-Q49rIZ1HUNkCg'></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OSRS Progression Chart</title>
+<link href="https://fonts.googleapis.com/css2?family=IM+Fell+English:ital@0;1&display=swap" rel="stylesheet">
+<style>
+/*
+  OSRS Design System
+  ─────────────────────────────────────────────────────────────────────
+  Palette drawn from the authentic OSRS client:
+    • Game bg:        #000000  (pure black canvas)
+    • Panel dark:     #1a0e04  (darkest wood)
+    • Panel mid:      #261508  (inventory/panel bg)
+    • Panel header:   #0f0802  (tab header / title bars)
+    • Border bright:  #8b6914  (highlight/active border)
+    • Border mid:     #5a3c1c  (standard border)
+    • Border dim:     #2e1c08  (subtle dividers)
+    • Text orange:    #ff981f  (primary UI text – authentic OSRS orange)
+    • Text tan:       #b09058  (secondary / label text)
+    • Text white:     #ffffff  (chat / tooltip text)
+    • State done:     #00b800  (green – quest complete)
+    • State active:   #ffcc00  (yellow – quest in progress)
+    • State danger:   #cc2200  (red – delete / warning)
+    • Slot bg:        #0a0600  (item slot)
+  ─────────────────────────────────────────────────────────────────────
+  Fonts:
+    • IM Fell English – display headings (evokes the classic RS title feel)
+    • Verdana, sans-serif – all UI body text (the actual in-game chat font)
+*/
+
+:root {
+  --bg:          #000000;
+  --panel-dark:  #1a0e04;
+  --panel-mid:   #261508;
+  --panel-hdr:   #0f0802;
+  --bdr-hi:      #8b6914;
+  --bdr-mid:     #5a3c1c;
+  --bdr-dim:     #2e1c08;
+  --text-or:     #ff981f;
+  --text-tan:    #b09058;
+  --text-wh:     #ffffff;
+  --text-dim:    #6a4c28;
+  --done-clr:    #00b800;
+  --active-clr:  #ffcc00;
+  --danger-clr:  #cc2200;
+  --slot-bg:     #0a0600;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  font-family: Verdana, sans-serif;
+  min-height: 100vh;
+  color: var(--text-or);
+  padding: 10px 12px;
+}
+
+/* ── Header ── */
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: var(--panel-hdr);
+  border: 2px solid var(--bdr-mid);
+  border-top: 3px solid var(--bdr-hi);
+  border-radius: 2px;
+  padding: 9px 16px;
+  margin-bottom: 8px;
+}
+
+h1 {
+  font-family: 'IM Fell English', Georgia, serif;
+  font-size: 20px;
+  color: var(--text-or);
+  letter-spacing: .4px;
+  cursor: pointer;
+  user-select: none;
+}
+h1:hover { color: #ffc050; }
+
+.prog-wrap { display: flex; align-items: center; gap: 8px; }
+.prog-label { font-size: 11px; color: var(--text-tan); }
+.prog-outer {
+  width: 140px; height: 12px;
+  background: #000;
+  border: 1px solid var(--bdr-mid);
+  border-radius: 1px;
+  overflow: hidden;
+}
+.prog-inner { height: 100%; background: var(--done-clr); transition: width .4s; }
+
+/* ── Toolbar ── */
+.toolbar {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+  align-items: center;
+}
+
+/* Authentic OSRS button: beveled rectangle */
+.btn {
+  background: linear-gradient(to bottom, #3a2510 0%, #1e1008 100%);
+  border: 1px solid var(--bdr-mid);
+  border-top-color: #7a5020;
+  border-left-color: #7a5020;
+  color: var(--text-or);
+  font-family: Verdana, sans-serif;
+  font-size: 11px;
+  padding: 4px 10px;
+  cursor: pointer;
+  border-radius: 1px;
+  transition: filter .1s;
+}
+.btn:hover { filter: brightness(1.25); }
+.btn:active { filter: brightness(.9); border-top-color: var(--bdr-mid); border-left-color: var(--bdr-mid); }
+.btn.danger { border-color: #6a1c08; color: #ff6040; }
+.btn.danger:hover { color: #ff8060; }
+
+.legend {
+  display: flex; align-items: center; gap: 12px;
+  margin-left: auto;
+  font-size: 10px;
+  color: var(--text-tan);
+}
+.leg { display: flex; align-items: center; gap: 4px; }
+.leg-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* ── Chart ── */
+.chart { display: flex; flex-direction: column; gap: 6px; }
+
+/* ── Stage row ── */
+.stage {
+  background: var(--panel-mid);
+  border: 2px solid var(--bdr-mid);
+  border-radius: 2px;
+  display: flex;
+  align-items: stretch;
+  min-height: 90px;
+  /* Inset shadow gives depth like the in-game panel */
+  box-shadow: inset 0 1px 0 rgba(255,180,60,.06);
+}
+
+/* Left sidebar */
+.stage-head {
+  flex: 0 0 148px;
+  background: var(--panel-hdr);
+  border-right: 2px solid var(--bdr-mid);
+  border-radius: 1px 0 0 1px;
+  padding: 7px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stage-name {
+  font-family: 'IM Fell English', Georgia, serif;
+  font-size: 13px;
+  color: var(--text-or);
+  cursor: pointer;
+  word-break: break-word;
+  line-height: 1.4;
+}
+.stage-name:hover { color: #ffc050; }
+
+.stage-desc {
+  font-size: 10px;
+  color: var(--text-tan);
+  line-height: 1.4;
+  word-break: break-word;
+  flex: 1;
+  font-style: italic;
+}
+
+.stage-meta {
+  font-size: 9px;
+  color: var(--text-dim);
+  margin-top: 2px;
+}
+
+.stage-acts {
+  display: flex; gap: 2px; flex-wrap: wrap;
+  margin-top: 2px;
+}
+
+.s-btn {
+  background: linear-gradient(to bottom, #2a1808 0%, #160c04 100%);
+  border: 1px solid var(--bdr-dim);
+  border-top-color: #4a2c12;
+  color: var(--text-tan);
+  cursor: pointer;
+  font-size: 9px;
+  padding: 2px 5px;
+  border-radius: 1px;
+  font-family: Verdana, sans-serif;
+  transition: color .1s, filter .1s;
+}
+.s-btn:hover { color: var(--text-or); filter: brightness(1.3); }
+.s-btn.del { color: #884422; border-color: #3a1508; }
+.s-btn.del:hover { color: #ff5500; }
+
+/* ── Items area ── */
+.stage-body {
+  flex: 1;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 5px;
+  padding: 7px;
+  min-width: 0;
+}
+
+.stage-body.drag-over {
+  background: rgba(139,105,20,.08);
+  outline: 1px dashed var(--bdr-hi);
+}
+
+/* ── Unlock card – the item slot ── */
+.unlock {
+  position: relative;
+  background: var(--slot-bg);
+  border: 1px solid var(--bdr-mid);
+  border-radius: 1px;
+  padding: 5px 4px 4px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  cursor: grab;
+  user-select: none;
+  transition: border-color .1s, opacity .15s, background .1s;
+  width: 68px;
+  min-height: 68px;
+}
+
+/* States mirror OSRS quest log: default, yellow = active, green = done */
+.unlock:hover        { border-color: var(--bdr-hi); }
+.unlock.state-active { border-color: var(--active-clr); background: #110e00; }
+.unlock.state-active .uname { color: var(--active-clr); }
+.unlock.state-done   { border-color: var(--done-clr);   background: #010e01; }
+.unlock.state-done   .uname { color: var(--done-clr); }
+
+.unlock.dragging     { opacity: .28; cursor: grabbing; }
+.unlock.drop-before  { box-shadow: -3px 0 0 var(--bdr-hi); }
+.unlock.drop-after   { box-shadow:  3px 0 0 var(--bdr-hi); }
+
+/* State dot (top-right corner, like item quantity) */
+.state-pip {
+  display: none;
+  position: absolute;
+  top: 2px; right: 3px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+.unlock.state-active .state-pip { display: block; background: var(--active-clr); }
+.unlock.state-done   .state-pip { display: block; background: var(--done-clr); }
+
+.uicon {
+  width: 32px; height: 32px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  pointer-events: none;
+}
+.uicon-ph {
+  width: 32px; height: 32px;
+  border: 1px dashed var(--bdr-dim);
+  border-radius: 1px;
+  background: #060400;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--bdr-mid);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.uname {
+  font-size: 9px;
+  color: var(--text-tan);
+  text-align: center;
+  line-height: 1.3;
+  word-break: break-word;
+  pointer-events: none;
+  font-family: Verdana, sans-serif;
+}
+
+/* ── OSRS-style right-click context menu ── */
+.ctx-menu {
+  display: none;
+  position: fixed;
+  z-index: 300;
+  background: #0a0600;
+  border: 1px solid var(--bdr-hi);
+  border-top: 2px solid var(--bdr-hi);
+  min-width: 140px;
+  box-shadow: 3px 3px 6px rgba(0,0,0,.8);
+  font-family: Verdana, sans-serif;
+  font-size: 12px;
+}
+.ctx-menu.open { display: block; }
+
+.ctx-title {
+  background: #1a1000;
+  border-bottom: 1px solid var(--bdr-mid);
+  padding: 4px 10px;
+  font-size: 11px;
+  color: var(--text-tan);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
+}
+
+.ctx-item {
+  padding: 4px 10px;
+  cursor: pointer;
+  color: var(--text-wh);
+  transition: background .08s;
+  white-space: nowrap;
+}
+.ctx-item:hover { background: #1e1200; }
+.ctx-item .ctx-action { color: var(--text-or); margin-right: 4px; }
+.ctx-item.active-action .ctx-action { color: var(--active-clr); }
+.ctx-item.done-action   .ctx-action { color: var(--done-clr); }
+.ctx-item.del-action    .ctx-action { color: #ff5540; }
+.ctx-item.edit-action   .ctx-action { color: #80c0ff; }
+.ctx-sep { height: 1px; background: var(--bdr-dim); margin: 2px 0; }
+
+/* Tooltip (hover, when no ctx menu open) */
+.unlock[data-tip]:hover::before {
+  content: attr(data-tip);
+  position: absolute;
+  bottom: calc(100% + 5px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0a0600;
+  border: 1px solid var(--bdr-hi);
+  color: var(--text-wh);
+  font-size: 10px;
+  font-family: Verdana, sans-serif;
+  padding: 4px 8px;
+  border-radius: 1px;
+  pointer-events: none;
+  z-index: 100;
+  max-width: 200px;
+  white-space: pre-wrap;
+  text-align: center;
+}
+
+/* ── Add unlock button ── */
+.add-unlock {
+  background: none;
+  border: 1px dashed var(--bdr-dim);
+  color: var(--text-dim);
+  font-family: Verdana, sans-serif;
+  font-size: 10px;
+  padding: 0 5px;
+  cursor: pointer;
+  border-radius: 1px;
+  width: 68px;
+  min-height: 68px;
+  transition: border-color .15s, color .15s;
+  line-height: 1.4;
+  text-align: center;
+}
+.add-unlock:hover { border-color: var(--bdr-hi); color: var(--text-tan); }
+
+/* ── Add stage button ── */
+.add-stage-btn {
+  background: none;
+  border: 2px dashed var(--bdr-dim);
+  color: var(--text-dim);
+  font-family: Verdana, sans-serif;
+  font-size: 12px;
+  padding: 12px;
+  cursor: pointer;
+  border-radius: 2px;
+  text-align: center;
+  transition: border-color .15s, color .15s;
+}
+.add-stage-btn:hover { border-color: var(--bdr-hi); color: var(--text-tan); }
+
+/* ── Modals ── */
+.overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.82);
+  z-index: 200;
+  align-items: center; justify-content: center;
+  padding: 16px;
+}
+.overlay.open { display: flex; }
+
+/* Modal styled like an OSRS interface panel */
+.modal {
+  background: var(--panel-mid);
+  border: 2px solid var(--bdr-mid);
+  border-top: 3px solid var(--bdr-hi);
+  border-radius: 2px;
+  padding: 16px;
+  width: 370px;
+  max-width: 100%;
+  box-shadow: 0 4px 24px rgba(0,0,0,.9);
+}
+
+.modal h2 {
+  font-family: 'IM Fell English', Georgia, serif;
+  font-size: 15px;
+  color: var(--text-or);
+  margin-bottom: 12px;
+  padding-bottom: 7px;
+  border-bottom: 1px solid var(--bdr-dim);
+}
+
+.field { margin-bottom: 10px; }
+.field label {
+  display: block;
+  font-size: 10px;
+  color: var(--text-tan);
+  margin-bottom: 3px;
+  font-family: Verdana, sans-serif;
+}
+.field input, .field textarea {
+  width: 100%;
+  background: #060400;
+  border: 1px solid var(--bdr-mid);
+  border-top-color: var(--bdr-dim);
+  color: var(--text-or);
+  font-family: Verdana, sans-serif;
+  font-size: 12px;
+  padding: 5px 7px;
+  border-radius: 1px;
+  outline: none;
+  transition: border-color .15s;
+}
+.field input:focus, .field textarea:focus { border-color: var(--bdr-hi); }
+.field textarea { height: 52px; resize: vertical; }
+
+.icon-row { display: flex; align-items: center; gap: 8px; margin-top: 4px; }
+.icon-prev-img {
+  width: 34px; height: 34px;
+  background: var(--slot-bg);
+  border: 1px solid var(--bdr-mid);
+  border-radius: 1px;
+  object-fit: contain;
+  image-rendering: pixelated;
+  flex-shrink: 0;
+  display: none;
+}
+.field-note {
+  font-size: 9px; color: var(--text-dim); margin-top: 3px;
+  font-family: Verdana, sans-serif; font-style: italic;
+}
+
+.modal-acts {
+  display: flex; gap: 6px; justify-content: flex-end; margin-top: 14px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: var(--panel-dark); }
+::-webkit-scrollbar-thumb { background: var(--bdr-mid); border-radius: 1px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1 id="chart-title" title="Click to rename">OSRS Progression Chart</h1>
+  <div class="prog-wrap">
+    <span class="prog-label" id="prog-text">0 / 0</span>
+    <div class="prog-outer"><div class="prog-inner" id="prog-bar" style="width:0%"></div></div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <button class="btn" onclick="exportJSON()">Export JSON</button>
+  <button class="btn" onclick="importJSON()">Import JSON</button>
+  <button class="btn danger" onclick="resetProgress()">Reset Progress</button>
+  <div class="legend">
+    <span class="leg"><span class="leg-dot" style="background:#5a3c1c;border:1px solid #8b6914"></span> Not started</span>
+    <span class="leg"><span class="leg-dot" style="background:var(--active-clr)"></span> In progress</span>
+    <span class="leg"><span class="leg-dot" style="background:var(--done-clr)"></span> Complete</span>
+  </div>
+</div>
+
+<div class="chart" id="chart"></div>
+
+<!-- Right-click context menu -->
+<div class="ctx-menu" id="ctx-menu">
+  <div class="ctx-title" id="ctx-title">Item</div>
+  <div class="ctx-item done-action"   id="ctx-done">  <span class="ctx-action">Mark complete</span></div>
+  <div class="ctx-item active-action" id="ctx-active"><span class="ctx-action">Mark in progress</span></div>
+  <div class="ctx-item"               id="ctx-none">  <span class="ctx-action" style="color:var(--text-tan)">Mark not started</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item edit-action"   id="ctx-edit">  <span class="ctx-action">Edit</span></div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item del-action"    id="ctx-del">   <span class="ctx-action">Delete</span></div>
+</div>
+
+<!-- Unlock modal -->
+<div class="overlay" id="item-overlay">
+  <div class="modal">
+    <h2 id="item-modal-title">Add Unlock</h2>
+    <div class="field">
+      <label>Name *</label>
+      <input id="f-name" type="text" placeholder="e.g. Dragon Scimitar" />
+    </div>
+    <div class="field">
+      <label>Description (shown on hover)</label>
+      <textarea id="f-desc" placeholder="e.g. Requires 60 Attack&#10;Complete Monkey Madness"></textarea>
+    </div>
+    <div class="field">
+      <label>Icon Image URL</label>
+      <div class="icon-row">
+        <img class="icon-prev-img" id="icon-prev" src="" alt="">
+        <div style="flex:1">
+          <input id="f-icon" type="text" placeholder="https://oldschool.runescape.wiki/images/..." oninput="previewIcon(this.value)">
+          <div class="field-note">Tip: OSRS Wiki → right-click item icon → "Copy image address"</div>
+        </div>
+      </div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn danger" onclick="closeItemModal()">Cancel</button>
+      <button class="btn" onclick="saveItem()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- Stage edit modal -->
+<div class="overlay" id="col-overlay">
+  <div class="modal">
+    <h2>Edit Stage</h2>
+    <div class="field">
+      <label>Stage Name</label>
+      <input id="f-colname" type="text" placeholder="e.g. Early Game" />
+    </div>
+    <div class="field">
+      <label>Description (displayed below name)</label>
+      <textarea id="f-coldesc" placeholder="e.g. Complete Tutorial Island, get basic gear..."></textarea>
+    </div>
+    <div class="modal-acts">
+      <button class="btn danger" onclick="closeColModal()">Cancel</button>
+      <button class="btn" onclick="saveColName()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const KEY = 'osrsv1';
+let S    = { title: 'OSRS Progression Chart', cols: [] };
+let drag = null;
+let editItem = null;
+let editCol  = null;
+let ctxTarget = null; // { ci, ii }
+
+// ── Persistence ───────────────────────────────────────────────────────────────
+function loadState() {
+  try {
+    const raw = localStorage.getItem(KEY);
+    if (raw) {
+      const p = JSON.parse(raw);
+      if (p && Array.isArray(p.cols)) {
+        p.cols.forEach(col => {
+          // Backwards-compat: migrate old 'done' boolean to new 'state' string
+          col.items = (col.items || []).map(item => {
+            const state = item.state || (item.done ? 'done' : 'none');
+            return {
+              name:  item.name  || '',
+              desc:  item.desc  || '',
+              icon:  item.icon  || '',
+              state: state // 'none' | 'active' | 'done'
+            };
+          });
+          // Backwards-compat: add description field if missing
+          if (!col.desc) col.desc = '';
+        });
+        S = p;
+      }
+    }
+  } catch(e) { console.warn('loadState:', e); }
+  render();
+}
+
+function saveState() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); }
+  catch(e) { console.warn('saveState:', e); }
+  render();
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function render() {
+  document.getElementById('chart-title').textContent = S.title || 'OSRS Progression Chart';
+  const chart = document.getElementById('chart');
+  chart.innerHTML = '';
+
+  S.cols.forEach((col, ci) => {
+    const done   = col.items.filter(i => i.state === 'done').length;
+    const active = col.items.filter(i => i.state === 'active').length;
+    const total  = col.items.length;
+
+    const stage = document.createElement('div');
+    stage.className = 'stage';
+
+    // ── Left sidebar ──
+    const head = document.createElement('div');
+    head.className = 'stage-head';
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'stage-name';
+    nameEl.textContent = col.name;
+    nameEl.title = 'Click to edit';
+    nameEl.onclick = () => openColModal(ci);
+    head.appendChild(nameEl);
+
+    if (col.desc) {
+      const descEl = document.createElement('div');
+      descEl.className = 'stage-desc';
+      descEl.textContent = col.desc;
+      head.appendChild(descEl);
+    }
+
+    const metaEl = document.createElement('div');
+    metaEl.className = 'stage-meta';
+    metaEl.textContent = `${done}/${total} done${active ? ` · ${active} active` : ''}`;
+    head.appendChild(metaEl);
+
+    const acts = document.createElement('div');
+    acts.className = 'stage-acts';
+    acts.innerHTML = `
+      <button class="s-btn" onclick="moveStage(${ci},-1)" title="Move up">▲</button>
+      <button class="s-btn" onclick="moveStage(${ci}, 1)" title="Move down">▼</button>
+      <button class="s-btn del" onclick="delStage(${ci})" title="Delete stage">✕</button>
+    `;
+    head.appendChild(acts);
+    stage.appendChild(head);
+
+    // ── Body ──
+    const body = document.createElement('div');
+    body.className = 'stage-body';
+    body.dataset.ci = ci;
+    wireBodyDrop(body, ci);
+
+    col.items.forEach((item, ii) => body.appendChild(makeUnlock(item, ci, ii)));
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'add-unlock';
+    addBtn.textContent = '+ Add Unlock';
+    addBtn.onclick = () => openItemModal(ci, -1);
+    body.appendChild(addBtn);
+
+    stage.appendChild(body);
+    chart.appendChild(stage);
+  });
+
+  const addStage = document.createElement('button');
+  addStage.className = 'add-stage-btn';
+  addStage.textContent = '+ Add Stage';
+  addStage.onclick = addColumn;
+  chart.appendChild(addStage);
+
+  // Progress: only count 'done' items
+  const all  = S.cols.flatMap(c => c.items);
+  const done = all.filter(i => i.state === 'done').length;
+  const tot  = all.length;
+  document.getElementById('prog-text').textContent = `${done} / ${tot}`;
+  document.getElementById('prog-bar').style.width = tot ? `${(done / tot * 100).toFixed(1)}%` : '0%';
+}
+
+// ── Build an unlock card ───────────────────────────────────────────────────────
+function makeUnlock(item, ci, ii) {
+  const el = document.createElement('div');
+  const stateClass = item.state === 'done' ? 'state-done' : item.state === 'active' ? 'state-active' : '';
+  el.className = `unlock ${stateClass}`.trim();
+  el.draggable = true;
+  if (item.name) el.dataset.tip = item.desc ? `${item.name}\n${item.desc}` : item.name;
+
+  const iconHtml = item.icon
+    ? `<img class="uicon" src="${esc(item.icon)}" alt="" onerror="this.outerHTML='<div class=uicon-ph>?</div>'">`
+    : `<div class="uicon-ph">?</div>`;
+
+  el.innerHTML = `
+    ${iconHtml}
+    <div class="uname">${esc(item.name)}</div>
+    <div class="state-pip"></div>
+  `;
+
+  // Left-click cycles: none → active → done → none
+  el.addEventListener('click', e => {
+    if (ctxMenu.classList.contains('open')) return;
+    cycleState(ci, ii);
+  });
+
+  // Right-click opens OSRS-style context menu
+  el.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    openCtxMenu(e.clientX, e.clientY, ci, ii, item.name);
+  });
+
+  // Drag
+  el.addEventListener('dragstart', e => {
+    drag = { ci, ii };
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', `${ci},${ii}`);
+  });
+  el.addEventListener('dragend', () => {
+    drag = null; el.classList.remove('dragging'); clearDropIndicators();
+  });
+  el.addEventListener('dragover', e => {
+    if (!drag) return;
+    e.preventDefault(); e.stopPropagation();
+    clearDropIndicators();
+    const rect = el.getBoundingClientRect();
+    el.classList.add(e.clientX < rect.left + rect.width / 2 ? 'drop-before' : 'drop-after');
+  });
+  el.addEventListener('drop', e => {
+    if (!drag) return;
+    e.preventDefault(); e.stopPropagation();
+    const rect = el.getBoundingClientRect();
+    commitDrop(ci, e.clientX < rect.left + rect.width / 2 ? ii : ii + 1);
+  });
+
+  return el;
+}
+
+// ── State cycle: none → active → done → none ─────────────────────────────────
+function cycleState(ci, ii) {
+  const cur = S.cols[ci].items[ii].state || 'none';
+  S.cols[ci].items[ii].state = cur === 'none' ? 'active' : cur === 'active' ? 'done' : 'none';
+  saveState();
+}
+function setState(ci, ii, state) {
+  S.cols[ci].items[ii].state = state;
+  saveState();
+}
+
+// ── Context menu ──────────────────────────────────────────────────────────────
+const ctxMenu = document.getElementById('ctx-menu');
+
+function openCtxMenu(x, y, ci, ii, name) {
+  ctxTarget = { ci, ii };
+  document.getElementById('ctx-title').textContent = name || 'Item';
+
+  // Position — keep on screen
+  ctxMenu.style.left = `${x}px`;
+  ctxMenu.style.top  = `${y}px`;
+  ctxMenu.classList.add('open');
+
+  setTimeout(() => {
+    const r = ctxMenu.getBoundingClientRect();
+    if (r.right  > window.innerWidth)  ctxMenu.style.left = `${x - r.width}px`;
+    if (r.bottom > window.innerHeight) ctxMenu.style.top  = `${y - r.height}px`;
+  }, 0);
+}
+
+function closeCtxMenu() { ctxMenu.classList.remove('open'); ctxTarget = null; }
+
+document.getElementById('ctx-done').onclick   = () => { if(ctxTarget) setState(ctxTarget.ci, ctxTarget.ii, 'done');   closeCtxMenu(); };
+document.getElementById('ctx-active').onclick = () => { if(ctxTarget) setState(ctxTarget.ci, ctxTarget.ii, 'active'); closeCtxMenu(); };
+document.getElementById('ctx-none').onclick   = () => { if(ctxTarget) setState(ctxTarget.ci, ctxTarget.ii, 'none');   closeCtxMenu(); };
+document.getElementById('ctx-edit').onclick   = () => { if(ctxTarget) { openItemModal(ctxTarget.ci, ctxTarget.ii); closeCtxMenu(); } };
+document.getElementById('ctx-del').onclick    = () => {
+  if (!ctxTarget) return;
+  const name = S.cols[ctxTarget.ci].items[ctxTarget.ii].name;
+  if (confirm(`Delete "${name}"?`)) { delItem(ctxTarget.ci, ctxTarget.ii); }
+  closeCtxMenu();
+};
+
+// Close ctx menu on any click elsewhere
+document.addEventListener('click', e => {
+  if (!ctxMenu.contains(e.target)) closeCtxMenu();
+});
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCtxMenu(); });
+
+// ── Drop zones ────────────────────────────────────────────────────────────────
+function wireBodyDrop(body, ci) {
+  body.addEventListener('dragover', e => {
+    if (!drag) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    body.classList.add('drag-over');
+  });
+  body.addEventListener('dragleave', e => {
+    if (!body.contains(e.relatedTarget)) body.classList.remove('drag-over');
+  });
+  body.addEventListener('drop', e => {
+    if (!drag) return;
+    e.preventDefault();
+    body.classList.remove('drag-over');
+    commitDrop(ci, S.cols[ci].items.length);
+  });
+}
+
+function commitDrop(tci, tii) {
+  if (!drag) return;
+  const { ci: sci, ii: sii } = drag;
+  const [item] = S.cols[sci].items.splice(sii, 1);
+  let adj = (tci === sci && tii > sii) ? tii - 1 : tii;
+  adj = Math.max(0, Math.min(adj, S.cols[tci].items.length));
+  S.cols[tci].items.splice(adj, 0, item);
+  drag = null;
+  saveState();
+}
+
+function clearDropIndicators() {
+  document.querySelectorAll('.drop-before,.drop-after').forEach(n => n.classList.remove('drop-before','drop-after'));
+  document.querySelectorAll('.stage-body.drag-over').forEach(n => n.classList.remove('drag-over'));
+}
+
+// ── Stage ops ─────────────────────────────────────────────────────────────────
+function addColumn() {
+  S.cols.push({ name: `Stage ${S.cols.length + 1}`, desc: '', items: [] });
+  saveState();
+}
+function moveStage(ci, dir) {
+  const ni = ci + dir;
+  if (ni < 0 || ni >= S.cols.length) return;
+  [S.cols[ci], S.cols[ni]] = [S.cols[ni], S.cols[ci]];
+  saveState();
+}
+function delStage(ci) {
+  if (!confirm(`Delete stage "${S.cols[ci].name}" and all its unlocks?`)) return;
+  S.cols.splice(ci, 1);
+  saveState();
+}
+function openColModal(ci) {
+  editCol = ci;
+  document.getElementById('f-colname').value  = S.cols[ci].name;
+  document.getElementById('f-coldesc').value  = S.cols[ci].desc || '';
+  document.getElementById('col-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('f-colname').focus(), 60);
+}
+function closeColModal() {
+  editCol = null;
+  document.getElementById('col-overlay').classList.remove('open');
+}
+function saveColName() {
+  const n = document.getElementById('f-colname').value.trim();
+  if (!n) return;
+  S.cols[editCol].name = n;
+  S.cols[editCol].desc = document.getElementById('f-coldesc').value.trim();
+  closeColModal();
+  saveState();
+}
+
+// ── Item ops ──────────────────────────────────────────────────────────────────
+function delItem(ci, ii) { S.cols[ci].items.splice(ii, 1); saveState(); }
+
+function openItemModal(ci, ii) {
+  editItem = { ci, ii };
+  document.getElementById('item-modal-title').textContent = ii === -1 ? 'Add Unlock' : 'Edit Unlock';
+  if (ii === -1) {
+    document.getElementById('f-name').value = '';
+    document.getElementById('f-desc').value = '';
+    document.getElementById('f-icon').value = '';
+    previewIcon('');
+  } else {
+    const item = S.cols[ci].items[ii];
+    document.getElementById('f-name').value = item.name;
+    document.getElementById('f-desc').value = item.desc || '';
+    document.getElementById('f-icon').value = item.icon || '';
+    previewIcon(item.icon || '');
+  }
+  document.getElementById('item-overlay').classList.add('open');
+  setTimeout(() => document.getElementById('f-name').focus(), 60);
+}
+function closeItemModal() {
+  editItem = null;
+  document.getElementById('item-overlay').classList.remove('open');
+}
+function saveItem() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) { document.getElementById('f-name').focus(); return; }
+  const { ci, ii } = editItem;
+  const existing = ii !== -1 ? S.cols[ci].items[ii] : null;
+  const obj = {
+    name,
+    desc:  document.getElementById('f-desc').value.trim(),
+    icon:  document.getElementById('f-icon').value.trim(),
+    state: existing ? existing.state : 'none'
+  };
+  if (ii === -1) S.cols[ci].items.push(obj);
+  else           S.cols[ci].items[ii] = obj;
+  closeItemModal();
+  saveState();
+}
+
+function previewIcon(url) {
+  const img = document.getElementById('icon-prev');
+  if (url) { img.src = url; img.style.display = 'block'; }
+  else img.style.display = 'none';
+}
+
+// ── Export / Import ───────────────────────────────────────────────────────────
+function exportJSON() {
+  const blob = new Blob([JSON.stringify(S, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = 'osrs-chart.json'; a.click();
+}
+function importJSON() {
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = '.json';
+  inp.onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    const r = new FileReader();
+    r.onload = ev => {
+      try {
+        const p = JSON.parse(ev.target.result);
+        if (!p || !Array.isArray(p.cols)) { alert('Invalid chart JSON.'); return; }
+        S = p;
+        saveState();
+      } catch(e) { alert('Could not parse JSON file.'); }
+    };
+    r.readAsText(file);
+  };
+  inp.click();
+}
+function resetProgress() {
+  if (!confirm('Reset all progress? (Stages and unlocks are kept.)')) return;
+  S.cols.forEach(c => c.items.forEach(i => i.state = 'none'));
+  saveState();
+}
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function esc(s) {
+  return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ── Modal backdrop close ──────────────────────────────────────────────────────
+document.getElementById('item-overlay').addEventListener('click', e => { if(e.target.id==='item-overlay') closeItemModal(); });
+document.getElementById('col-overlay').addEventListener('click',  e => { if(e.target.id==='col-overlay')  closeColModal(); });
+
+// ── Enter shortcuts ───────────────────────────────────────────────────────────
+document.getElementById('f-name').addEventListener('keydown',    e => { if(e.key==='Enter') saveItem(); });
+document.getElementById('f-colname').addEventListener('keydown', e => { if(e.key==='Enter') saveColName(); });
+
+// ── Chart title ───────────────────────────────────────────────────────────────
+document.getElementById('chart-title').addEventListener('click', () => {
+  const n = prompt('Chart title:', S.title);
+  if (n !== null && n.trim()) { S.title = n.trim(); saveState(); }
+});
+
+// ── Boot ──────────────────────────────────────────────────────────────────────
+loadState();
+</script>
+</body>
+</html>
