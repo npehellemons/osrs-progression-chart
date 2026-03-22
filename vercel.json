@@ -1,0 +1,12 @@
+{
+    "buildCommand": "",
+    "outputDirectory": ".",
+    "public": true,
+    "cleanUrls": false,
+    "rewrites": [
+        {
+            "source": "/(.*)",
+            "destination": "/osrs-progression-chart.html"
+        }
+    ]
+}
